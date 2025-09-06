@@ -1,0 +1,9 @@
+[plugin]
+name = "plugin_manager"
+main = "main.py"
+enabled = true
+
+[about]
+description = "Provides /plugin command to manage other plugins (load/unload/restart)."
+version = "0.1.0"
+author = "system"

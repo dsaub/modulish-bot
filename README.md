@@ -33,3 +33,49 @@ prefix = "!"
 [settings]
 debug = false
 ```
+
+## Plugins
+
+On startup the bot ensures a `plugins/` directory exists. Each plugin lives in its own subfolder:
+
+```
+plugins/
+   my_plugin/
+      plugin.toml
+      main.py        # entry point referenced by plugin.toml
+
+config/
+   my_plugin/       # auto-created per-plugin data/config folder
+      (plugin-specific files)
+```
+
+`plugin.toml` format (minimal):
+
+```toml
+[plugin]
+name = "my_plugin"      # Optional (defaults to folder name)
+main = "main.py"         # Required: relative path to the plugin entry file
+enabled = true           # Optional (default true)
+
+[about]
+description = "My awesome plugin"
+version = "0.1.0"
+author = "me"
+```
+
+Entry module (`main.py`) can optionally expose:
+
+```
+def setup(bot, config_dir: str):
+   # Register cogs/commands here using config_dir for persistence
+   ...
+```
+
+Example provided in `plugins/example_plugin` adding a simple `ping` command.
+
+Future ideas (not yet implemented):
+* Dependency enforcement using `[requires]` table
+* Hot reload commands
+* Version & compatibility checks
+* Slash command auto-registration
+* Descarga de plugins remotos (slash `/plugin_download repo:<owner/repo>`)
