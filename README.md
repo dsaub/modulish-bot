@@ -33,8 +33,3 @@ prefix = "!"
 [settings]
 debug = false
 ```
-
-## Commands
-
-- `!ping` - Responds with "Pong!"
-- `!hello` - Greets the user

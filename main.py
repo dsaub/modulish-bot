@@ -48,16 +48,6 @@ def main():
         print(f'{bot.user} has connected to Discord!')
         print(f'Bot is ready and using prefix: {prefix}')
     
-    @bot.command(name='ping')
-    async def ping(ctx):
-        """Simple ping command to test bot functionality"""
-        await ctx.send('Pong!')
-    
-    @bot.command(name='hello')
-    async def hello(ctx):
-        """Hello command"""
-        await ctx.send(f'Hello {ctx.author.mention}! I am {bot.user.name}.')
-    
     # Run the bot
     try:
         bot.run(token)
