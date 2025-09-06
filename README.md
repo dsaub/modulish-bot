@@ -6,7 +6,7 @@ A Discord bot built with pycord that loads configuration from a TOML file.
 
 1. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 
 2. Create your configuration file:
@@ -18,7 +18,7 @@ A Discord bot built with pycord that loads configuration from a TOML file.
 
 4. Run the bot:
    ```bash
-   python main.py
+   uv run python main.py
    ```
 
 ## Configuration
