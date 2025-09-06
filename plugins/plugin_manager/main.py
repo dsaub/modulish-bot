@@ -35,9 +35,9 @@ class PluginManager(commands.Cog):
         ordered = loaded + [d for d in all_dirs if d not in loaded]
         return [name for name in ordered if partial in name.lower()][:25]
 
-    @discord.slash_command(name="plugin", description="Gestiona plugins (start/stop/restart)")
-    @option("plugin", description="Nombre del plugin", autocomplete=autocomplete_plugin_names)
-    @option("accion", description="Accion", choices=ACTIONS)
+    @discord.slash_command(name="plugin", description="Manage plugins (start/stop/restart)")
+    @option("plugin", description="Plugin name", autocomplete=autocomplete_plugin_names)
+    @option("accion", description="Action", choices=ACTIONS)
     async def plugin_command(self, ctx: discord.ApplicationContext, plugin: str, accion: str):
         await ctx.defer(ephemeral=True)
         bot = self.bot
@@ -49,46 +49,46 @@ class PluginManager(commands.Cog):
         if action == 'restart':
             ok = await bot.plugin_restart(plugin)
             if ok:
-                await ctx.respond(f"🔄 Plugin '{plugin}' reiniciado.")
+                await ctx.respond(f"🔄 Plugin '{plugin}' restarted.")
             else:
-                await ctx.respond(f"⚠️ No se pudo reiniciar '{plugin}'. ¿Existe?")
+                await ctx.respond(f"⚠️ Could not restart '{plugin}'. Does it exist?")
         elif action == 'stop':
             ok = await bot.plugin_unload(plugin)
             if ok:
-                await ctx.respond(f"🛑 Plugin '{plugin}' detenido.")
+                await ctx.respond(f"🛑 Plugin '{plugin}' stopped.")
             else:
-                await ctx.respond(f"⚠️ No se pudo detener '{plugin}'. ¿Está cargado?")
+                await ctx.respond(f"⚠️ Could not stop '{plugin}'. Is it loaded?")
         elif action == 'start':
             ok = await bot.plugin_load(plugin)
             if ok:
-                await ctx.respond(f"✅ Plugin '{plugin}' iniciado.")
+                await ctx.respond(f"✅ Plugin '{plugin}' started.")
             else:
-                await ctx.respond(f"⚠️ No se pudo iniciar '{plugin}'. ¿Ya está cargado o no existe?")
+                await ctx.respond(f"⚠️ Could not start '{plugin}'. Already loaded or not found?")
         else:
-            await ctx.respond("Acción desconocida.")
+            await ctx.respond("Unknown action.")
 
-    @discord.slash_command(name="plugin_download", description="Descarga (y opcionalmente carga) un plugin desde GitHub owner/repo[@branch]")
-    @option("repo", description="Especificación owner/repo o owner/repo@branch")
-    @option("cargar", description="Cargar tras descargar", choices=["si","no"], required=False)
+    @discord.slash_command(name="plugin_download", description="Download (and optionally load) a plugin from GitHub owner/repo[@branch]")
+    @option("repo", description="Spec owner/repo or owner/repo@branch")
+    @option("cargar", description="Load after download", choices=["si","no"], required=False)
     async def plugin_download(self, ctx: discord.ApplicationContext, repo: str, cargar: str = "si"):
         await ctx.defer(ephemeral=True)
         spec = repo.strip()
-        await ctx.followup.send(f"⬇️ Descargando '{spec}'...", ephemeral=True)
+        await ctx.followup.send(f"⬇️ Downloading '{spec}'...", ephemeral=True)
         try:
             await asyncio.to_thread(install_repo_as_plugin, spec)
             repo_name = spec.split('@', 1)[0].split('/')[-1]
             if cargar.lower() == 'si':
                 loaded = await self.bot.plugin_load(repo_name)
                 if loaded:
-                    await ctx.respond(f"✅ Plugin '{repo_name}' descargado y cargado.")
+                    await ctx.respond(f"✅ Plugin '{repo_name}' downloaded and loaded.")
                 else:
-                    await ctx.respond(f"⚠️ Descargado pero no se pudo cargar '{repo_name}'. ¿Ya estaba cargado?")
+                    await ctx.respond(f"⚠️ Downloaded but could not load '{repo_name}'. Already loaded?")
             else:
-                await ctx.respond(f"✅ Plugin '{repo_name}' descargado. (No cargado por petición)")
+                await ctx.respond(f"✅ Plugin '{repo_name}' downloaded (not loaded by request)")
         except DownloadError as e:
-            await ctx.respond(f"❌ Error al descargar: {e}")
+            await ctx.respond(f"❌ Download error: {e}")
         except Exception as e:
-            await ctx.respond(f"❌ Error inesperado: {e}")
+            await ctx.respond(f"❌ Unexpected error: {e}")
 
 # record cogs for potential auto-removal on unload
 PLUGIN_COGS = ["PluginManager"]
@@ -97,4 +97,4 @@ def setup(bot: commands.Bot, config_dir: str = None):
     if config_dir is None:
         config_dir = globals().get('PLUGIN_CONFIG_DIR', '<unknown>')
     bot.add_cog(PluginManager(bot, config_dir))
-    print("[plugin_manager] setup listo")
+    print("[plugin_manager] setup complete")

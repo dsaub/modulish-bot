@@ -8,7 +8,7 @@ import importlib.util
 from types import ModuleType
 from discord.ext import commands
 
-# ===== Colores ANSI (sin dependencias externas) =====
+# ===== ANSI Colors (no external deps) =====
 RESET = "\033[0m"
 BOLD = "\033[1m"
 DIM = "\033[2m"
@@ -26,7 +26,7 @@ def _banner():
     name = "Modulish-Bot"
     line = f"{FG_MAGENTA}{'═'*70}{RESET}"
     art = f"{FG_MAGENTA}{BOLD}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓{RESET}\n" \
-          f"{FG_MAGENTA}{BOLD}┃{RESET}  {FG_CYAN}{BOLD}Modulish-Bot → Sistema modular de plugins para Discord{RESET}            {FG_MAGENTA}{BOLD}┃{RESET}\n" \
+          f"{FG_MAGENTA}{BOLD}┃{RESET}  {FG_CYAN}{BOLD}Modulish-Bot → Modular plugin system for Discord{RESET}            {FG_MAGENTA}{BOLD}┃{RESET}\n" \
           f"{FG_MAGENTA}{BOLD}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛{RESET}"
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     sys_line = (
@@ -230,7 +230,7 @@ def main():
 
     # Startup banner
     print(_banner())
-    pretty("Iniciando núcleo...", FG_CYAN, prefix="⚙")
+    pretty("Starting core...", FG_CYAN, prefix="⚙")
 
     # Load configuration
     config = load_config()
@@ -254,16 +254,16 @@ def main():
     @bot.event
     async def on_ready():
         """Event fired when bot is ready"""
-        pretty(f"Conectado como {bot.user} ✅", FG_GREEN, prefix="🚀")
-        pretty(f"Prefix activo: {prefix}", FG_CYAN, prefix="➤")
+        pretty(f"Connected as {bot.user} ✅", FG_GREEN, prefix="🚀")
+        pretty(f"Active prefix: {prefix}", FG_CYAN, prefix="➤")
 
         # Discover and load plugins after bot is ready (so bot is usable inside setup)
         plugin_dirs = discover_plugin_paths()
         if not plugin_dirs:
-            pretty("No se encontraron plugins (carpeta vacía)", FG_YELLOW, prefix="⚠")
+            pretty("No plugins found (directory empty)", FG_YELLOW, prefix="⚠")
             return
         total = len(plugin_dirs)
-        pretty(f"Descubiertos {total} posibles plugin(s).", FG_MAGENTA, prefix="🔍")
+        pretty(f"Discovered {total} plugin candidate(s).", FG_MAGENTA, prefix="🔍")
         print(f"{FG_MAGENTA}{'─'*70}{RESET}")
         # Pre-list
         for idx, pdir in enumerate(plugin_dirs, 1):
@@ -281,28 +281,28 @@ def main():
         for idx, pdir in enumerate(plugin_dirs, 1):
             meta = load_plugin_metadata(pdir)
             name_display = meta.get('name') if meta else os.path.basename(pdir)
-            pre_line = f"{FG_YELLOW}↻ Preparando {name_display}{RESET}" if meta else f"{FG_RED}✖ Metadata inválida{RESET}"
+            pre_line = f"{FG_YELLOW}↻ Preparing {name_display}{RESET}" if meta else f"{FG_RED}✖ Invalid metadata{RESET}"
             print(pre_line)
             if not meta:
                 continue
             if not meta['enabled']:
-                print(f"  {FG_GRAY}• Deshabilitado (enabled=false) – omitido{RESET}")
+                print(f"  {FG_GRAY}• Disabled (enabled=false) – skipped{RESET}")
                 continue
             module = import_plugin_module(meta)
             if not module:
-                print(f"  {FG_RED}• Falló importación{RESET}")
+                print(f"  {FG_RED}• Import failed{RESET}")
                 continue
             try:
                 await initialize_plugin(module, bot, meta)
                 bot.plugins[meta['name']] = {'module': module, 'meta': meta}
                 loaded_count += 1
-                print(f"  {FG_GREEN}✔ Cargado correctamente{RESET}")
+                print(f"  {FG_GREEN}✔ Loaded successfully{RESET}")
             except Exception as e:
-                print(f"  {FG_RED}✖ Error al cargar: {e}{RESET}")
+                print(f"  {FG_RED}✖ Error loading: {e}{RESET}")
             print(f"{FG_GRAY}――――――――――――――――――――――――――――――――――――――――――――――――――――{RESET}")
 
         summary_color = FG_GREEN if loaded_count else FG_YELLOW
-        pretty(f"Resumen: {loaded_count}/{total} plugin(s) cargados.", summary_color, prefix="📦")
+        pretty(f"Summary: {loaded_count}/{total} plugin(s) loaded.", summary_color, prefix="📦")
         print(f"{FG_MAGENTA}{'═'*70}{RESET}")
     
     # Run the bot
