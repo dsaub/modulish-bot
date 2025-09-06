@@ -12,6 +12,7 @@ class PluginManager(commands.Cog):
     def __init__(self, bot: commands.Bot, config_dir: str):
         self.bot = bot
         self.config_dir = config_dir
+        print("[plugin_manager] initialized")
 
     async def autocomplete_plugin_names(self, ctx: discord.AutocompleteContext):
         # Suggest loaded plugins first, then available folders

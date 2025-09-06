@@ -2,9 +2,43 @@ import discord
 import toml
 import os
 import sys
+import platform
+import datetime
 import importlib.util
 from types import ModuleType
 from discord.ext import commands
+
+# ===== Colores ANSI (sin dependencias externas) =====
+RESET = "\033[0m"
+BOLD = "\033[1m"
+DIM = "\033[2m"
+ITALIC = "\033[3m"
+FG_CYAN = "\033[36m"
+FG_MAGENTA = "\033[35m"
+FG_BLUE = "\033[34m"
+FG_GREEN = "\033[32m"
+FG_YELLOW = "\033[33m"
+FG_RED = "\033[31m"
+FG_WHITE = "\033[97m"
+FG_GRAY = "\033[90m"
+
+def _banner():
+    name = "Modulish-Bot"
+    line = f"{FG_MAGENTA}{'═'*70}{RESET}"
+    art = f"{FG_MAGENTA}{BOLD}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓{RESET}\n" \
+          f"{FG_MAGENTA}{BOLD}┃{RESET}  {FG_CYAN}{BOLD}Modulish-Bot → Sistema modular de plugins para Discord{RESET}            {FG_MAGENTA}{BOLD}┃{RESET}\n" \
+          f"{FG_MAGENTA}{BOLD}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛{RESET}"
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    sys_line = (
+        f"{FG_BLUE}Python:{RESET} {platform.python_version()}  "
+        f"{FG_BLUE}OS:{RESET} {platform.system()} {platform.release()}  "
+        f"{FG_BLUE}Machine:{RESET} {platform.machine()}  "
+        f"{FG_BLUE}PID:{RESET} {os.getpid()}"
+    )
+    return f"{art}\n{FG_GRAY}{DIM}{now}{RESET}\n{sys_line}\n{line}"
+
+def pretty(msg: str, color=FG_WHITE, prefix="★"):
+    print(f"{color}{prefix} {msg}{RESET}")
 
 PLUGINS_DIR = "plugins"
 CONFIG_ROOT = "config"  # Root directory for per-plugin configs / local data
@@ -187,6 +221,10 @@ def main():
     # Ensure plugins directory exists as early as possible
     ensure_root_dirs()
 
+    # Startup banner
+    print(_banner())
+    pretty("Iniciando núcleo...", FG_CYAN, prefix="⚙")
+
     # Load configuration
     config = load_config()
     
@@ -209,31 +247,56 @@ def main():
     @bot.event
     async def on_ready():
         """Event fired when bot is ready"""
-        print(f'{bot.user} has connected to Discord!')
-        print(f'Bot is ready and using prefix: {prefix}')
+        pretty(f"Conectado como {bot.user} ✅", FG_GREEN, prefix="🚀")
+        pretty(f"Prefix activo: {prefix}", FG_CYAN, prefix="➤")
 
         # Discover and load plugins after bot is ready (so bot is usable inside setup)
         plugin_dirs = discover_plugin_paths()
         if not plugin_dirs:
-            print("[plugins] No plugins found.")
+            pretty("No se encontraron plugins (carpeta vacía)", FG_YELLOW, prefix="⚠")
             return
-        print(f"[plugins] Found {len(plugin_dirs)} plugin candidate(s). Loading...")
+        total = len(plugin_dirs)
+        pretty(f"Descubiertos {total} posibles plugin(s).", FG_MAGENTA, prefix="🔍")
+        print(f"{FG_MAGENTA}{'─'*70}{RESET}")
+        # Pre-list
+        for idx, pdir in enumerate(plugin_dirs, 1):
+            name = os.path.basename(pdir)
+            print(f"{FG_GRAY}[{idx:02d}/{total:02d}]{RESET} {FG_BLUE}{name}{RESET} → {FG_GRAY}{pdir}{RESET}")
+        print(f"{FG_MAGENTA}{'─'*70}{RESET}")
+
         bot.plugins = {}  # simple registry
         # Expose management helpers
         bot.plugin_unload = lambda n: unload_plugin(bot, n)
         bot.plugin_load = lambda n: load_plugin(bot, n)
         bot.plugin_restart = lambda n: restart_plugin(bot, n)
-        for pdir in plugin_dirs:
+
+        loaded_count = 0
+        for idx, pdir in enumerate(plugin_dirs, 1):
             meta = load_plugin_metadata(pdir)
+            name_display = meta.get('name') if meta else os.path.basename(pdir)
+            pre_line = f"{FG_YELLOW}↻ Preparando {name_display}{RESET}" if meta else f"{FG_RED}✖ Metadata inválida{RESET}"
+            print(pre_line)
             if not meta:
                 continue
             if not meta['enabled']:
-                print(f"[plugins] Plugin '{meta['name']}' disabled (enabled=false). Skipping.")
+                print(f"  {FG_GRAY}• Deshabilitado (enabled=false) – omitido{RESET}")
                 continue
             module = import_plugin_module(meta)
-            if module:
+            if not module:
+                print(f"  {FG_RED}• Falló importación{RESET}")
+                continue
+            try:
                 await initialize_plugin(module, bot, meta)
                 bot.plugins[meta['name']] = {'module': module, 'meta': meta}
+                loaded_count += 1
+                print(f"  {FG_GREEN}✔ Cargado correctamente{RESET}")
+            except Exception as e:
+                print(f"  {FG_RED}✖ Error al cargar: {e}{RESET}")
+            print(f"{FG_GRAY}――――――――――――――――――――――――――――――――――――――――――――――――――――{RESET}")
+
+        summary_color = FG_GREEN if loaded_count else FG_YELLOW
+        pretty(f"Resumen: {loaded_count}/{total} plugin(s) cargados.", summary_color, prefix="📦")
+        print(f"{FG_MAGENTA}{'═'*70}{RESET}")
     
     # Run the bot
     try:

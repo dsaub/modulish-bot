@@ -1,7 +1,7 @@
 [project]
 name = "hybicraft-bot"
 version = "0.1.0"
-description = "A Discord bot built with pycord that loads configuration from a TOML file"
+description = "A Discord bot built with pycord that uses a module-system"
 readme = "README.md"
 requires-python = ">=3.8,<3.13"
 dependencies = [
