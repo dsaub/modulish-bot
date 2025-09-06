@@ -50,6 +50,7 @@ def build_candidate_urls(owner: str, repo: str, branch: Optional[str]):
         # Try main then master
         candidates.append(f"https://codeload.github.com/{owner}/{repo}/zip/refs/heads/main")
         candidates.append(f"https://codeload.github.com/{owner}/{repo}/zip/refs/heads/master")
+        candidates.append(f"https://codeload.github.com/{owner}/{repo}/zip/refs/heads/latest")
     return candidates
 
 
