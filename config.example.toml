@@ -1,0 +1,10 @@
+# Example configuration file for Hybicraft Bot
+# Copy this file to config.toml and replace the placeholder values
+
+[bot]
+token = "YOUR_BOT_TOKEN_HERE"
+prefix = "!"
+
+[settings]
+# Additional settings can be added here
+debug = false

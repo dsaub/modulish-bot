@@ -1,0 +1,10 @@
+# Configuration file for Hybicraft Bot
+# Replace YOUR_BOT_TOKEN with your actual Discord bot token
+
+[bot]
+token = "YOUR_BOT_TOKEN"
+prefix = "!"
+
+[settings]
+# Additional settings can be added here
+debug = false
