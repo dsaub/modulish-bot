@@ -106,7 +106,14 @@ def import_plugin_module(plugin_meta) -> ModuleType | None:
             return None
         module = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = module
-        spec.loader.exec_module(module)  # type: ignore[attr-defined]
+        # Allow plugin to import sibling files with absolute form (e.g. 'import downloader')
+        sys.path.insert(0, plugin_dir)
+        try:
+            spec.loader.exec_module(module)  # type: ignore[attr-defined]
+        finally:
+            # Remove only if still at front
+            if sys.path and sys.path[0] == plugin_dir:
+                sys.path.pop(0)
         return module
     except Exception as e:
         print(f"[plugins] Error importing plugin '{plugin_meta['name']}': {e}")

@@ -4,7 +4,11 @@ import discord
 from discord.ext import commands
 from discord import option
 
-from .downloader import install_repo_as_plugin, DownloadError
+try:
+    from .downloader import install_repo_as_plugin, DownloadError  # when package context exists
+except Exception:
+    # Fallback when loaded as loose files with sys.path tweaked by loader
+    from downloader import install_repo_as_plugin, DownloadError  # type: ignore
 
 ACTIONS = ["restart", "stop", "start"]
 
