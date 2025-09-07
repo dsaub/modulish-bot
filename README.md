@@ -1,6 +1,6 @@
-# hybicraft-bot
+# modulish-bot
 
-A Discord bot built with pycord that loads configuration from a TOML file.
+A Python Modular-Style Discord Bot
 
 ## Setup
 
