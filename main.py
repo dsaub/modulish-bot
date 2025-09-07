@@ -304,6 +304,9 @@ def main():
         summary_color = FG_GREEN if loaded_count else FG_YELLOW
         pretty(f"Summary: {loaded_count}/{total} plugin(s) loaded.", summary_color, prefix="📦")
         print(f"{FG_MAGENTA}{'═'*70}{RESET}")
+        print(f"{FG_CYAN} Syncing slash commands... this may take a while...{RESET}")
+        await bot.sync_commands()
+        pretty("Slash commands synced.", FG_GREEN, prefix="✅")
     
     # Run the bot
     try:
